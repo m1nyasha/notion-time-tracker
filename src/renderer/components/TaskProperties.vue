@@ -5,22 +5,14 @@
       <TaskStatus :status="statusProperty.value.status" />
     </div>
 
-    <!-- Other Properties (select first few important ones) -->
+    <!-- Other Properties (show all visible ones based on settings) -->
     <div v-if="otherProperties.length > 0" class="flex flex-wrap gap-2 text-sm">
       <PropertyValue
-        v-for="property in otherProperties.slice(0, 3)"
+        v-for="property in otherProperties"
         :key="property.id"
         :property="property"
         class="bg-gray-50 dark:bg-gray-800 px-2 py-1 rounded"
       />
-      
-      <!-- Show more indicator -->
-      <span 
-        v-if="otherProperties.length > 3"
-        class="text-xs text-gray-500 dark:text-gray-400 px-2 py-1"
-      >
-        +{{ otherProperties.length - 3 }} еще
-      </span>
     </div>
   </div>
 </template>
@@ -28,8 +20,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { NotionProperty } from '@/types/notion'
+import { useDisplayStore } from '@/stores/display'
 import TaskStatus from '@/renderer/components/TaskStatus.vue'
 import PropertyValue from '@/renderer/components/PropertyValue.vue'
+
+const displayStore = useDisplayStore()
 
 interface Props {
   properties: Record<string, NotionProperty>
@@ -40,15 +35,17 @@ const props = defineProps<Props>()
 // Computed
 const allProperties = computed(() => Object.values(props.properties))
 
-const statusProperty = computed(() => 
-  allProperties.value.find(p => p.type === 'status')
-)
+const statusProperty = computed(() => {
+  const prop = allProperties.value.find(p => p.type === 'status')
+  return prop && displayStore.isPropertyVisible(prop.name) ? prop : null
+})
 
 const otherProperties = computed(() => 
   allProperties.value.filter(p => 
     p.type !== 'title' && 
     p.type !== 'status' && 
-    !isEmptyProperty(p)
+    !isEmptyProperty(p) &&
+    displayStore.isPropertyVisible(p.name)
   )
 )
 

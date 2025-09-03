@@ -73,11 +73,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { useNotionStore } from '@/stores/notion'
 import { useTasksStore } from '@/stores/tasks'
 import { useFiltersStore } from '@/stores/filters'
+import { useDisplayStore } from '@/stores/display'
 import { useNotionApi } from '@/renderer/composables/useNotionApi'
 import FilterBar from '@/renderer/components/FilterBar.vue'
 import TasksHeader from '@/renderer/components/TasksHeader.vue'
@@ -89,6 +90,7 @@ import type { NotionTask, NotionProperty } from '@/types/notion'
 const notionStore = useNotionStore()
 const tasksStore = useTasksStore()
 const filtersStore = useFiltersStore()
+const displayStore = useDisplayStore()
 const { fetchTasks } = useNotionApi()
 
 // Computed
@@ -119,6 +121,11 @@ const availableProperties = computed((): NotionProperty[] => {
   
   return Array.from(propertyMap.values())
 })
+
+// Update display store when available properties change
+watch(availableProperties, (newProperties) => {
+  displayStore.updateAvailableProperties(newProperties)
+}, { immediate: true })
 
 // Methods
 const handleRefresh = async () => {

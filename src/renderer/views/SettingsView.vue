@@ -1,5 +1,6 @@
 <template>
-  <div class="max-w-2xl mx-auto p-6">
+  <div class="min-h-screen max-h-screen overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-gray-100 dark:scrollbar-track-gray-800">
+    <div class="max-w-2xl mx-auto p-6 pb-16">
     <!-- Header -->
     <div class="mb-8">
       <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">
@@ -115,6 +116,11 @@
       </div>
     </div>
 
+    <!-- Property Display Settings -->
+    <div class="mt-8">
+      <PropertyDisplaySettings />
+    </div>
+
     <!-- Documentation Section -->
     <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
       <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-3">
@@ -150,6 +156,7 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
@@ -158,6 +165,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useNotionStore } from '@/stores/notion'
 import { useNotionApi } from '@/renderer/composables/useNotionApi'
 import ErrorMessage from '@/renderer/components/ErrorMessage.vue'
+import PropertyDisplaySettings from '@/renderer/components/PropertyDisplaySettings.vue'
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 
 const notionStore = useNotionStore()
