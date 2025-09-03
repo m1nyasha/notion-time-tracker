@@ -10,6 +10,9 @@
 
     <!-- Active Timer Notification -->
     <ActiveTimerNotification />
+    
+    <!-- Overtime Notification -->
+    <OvertimeNotification />
   </div>
 </template>
 
@@ -17,11 +20,14 @@
 import { onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useTimersStore } from '@/stores/timers'
+import { useNotificationsStore } from '@/stores/notifications'
 import AppHeader from '@/renderer/components/AppHeader.vue'
 import ActiveTimerNotification from '@/renderer/components/ActiveTimerNotification.vue'
+import OvertimeNotification from '@/renderer/components/OvertimeNotification.vue'
 
 const appStore = useAppStore()
 const timersStore = useTimersStore()
+const notificationsStore = useNotificationsStore()
 
 // Initialize app theme on mount
 onMounted(() => {
@@ -39,9 +45,10 @@ onMounted(() => {
   mediaQuery.addEventListener('change', handleThemeChange)
 })
 
-// Cleanup timers on unmount
+// Cleanup timers and notifications on unmount
 onUnmounted(() => {
   timersStore.cleanup()
+  notificationsStore.stopAllSounds()
 })
 </script>
 

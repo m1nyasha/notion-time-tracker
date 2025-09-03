@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, Menu, shell } from 'electron'
+import { app, BrowserWindow, ipcMain, Menu, shell, Notification } from 'electron'
 import { join } from 'path'
 
 const isDev = process.env.NODE_ENV === 'development'
@@ -104,6 +104,23 @@ app.on('window-all-closed', () => {
 // IPC handlers
 ipcMain.handle('get-is-dev', () => {
   return isDev
+})
+
+// IPC Handler for system notifications
+ipcMain.handle('show-notification', async (event, options: { title: string; body: string; silent?: boolean }) => {
+  try {
+    if (Notification.isSupported()) {
+      const notification = new Notification({
+        title: options.title,
+        body: options.body,
+        silent: options.silent || false
+      })
+      notification.show()
+    }
+  } catch (error) {
+    console.error('Failed to show system notification:', error)
+    throw error
+  }
 })
 
 // Notion API handlers

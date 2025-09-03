@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="activeTimer"
+    v-if="activeTimer && !isMinimized"
     class="fixed top-4 right-4 z-50 bg-white dark:bg-gray-800 border border-gray-200 
            dark:border-gray-600 rounded-lg shadow-lg p-4 max-w-sm"
   >
@@ -26,12 +26,12 @@
         </div>
       </div>
 
-      <!-- Stop button -->
+      <!-- Minimize button (doesn't stop timer) -->
       <button
-        @click="stopActiveTimer"
+        @click="minimizeNotification"
         class="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 
                transition-colors"
-        title="Остановить таймер"
+        title="Скрыть уведомление"
       >
         <XMarkIcon class="w-4 h-4" />
       </button>
@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { XMarkIcon } from '@heroicons/vue/24/outline'
 import { useTimersStore } from '@/stores/timers'
 import { useTasksStore } from '@/stores/tasks'
@@ -48,6 +48,9 @@ import TimerDisplay from '@/renderer/components/TimerDisplay.vue'
 
 const timersStore = useTimersStore()
 const tasksStore = useTasksStore()
+
+// State
+const isMinimized = ref(false)
 
 // Computed
 const activeTimer = computed(() => timersStore.getActiveTimer)
@@ -65,11 +68,14 @@ const timeProgress = computed(() => {
 })
 
 // Methods
-const stopActiveTimer = () => {
-  if (activeTimer.value) {
-    timersStore.stopTimer(activeTimer.value.taskId)
-  }
+const minimizeNotification = () => {
+  isMinimized.value = true
 }
+
+// Reset minimization when timer changes
+watch(() => activeTimer.value?.taskId, () => {
+  isMinimized.value = false
+})
 </script>
 
 <!-- As an AI Agent, I'm only working based on Clean Code Constitution. Applied rules: [2.1, 2.2, 3.1, 4.1, 5.3] -->

@@ -54,7 +54,8 @@ export const useTimersStore = defineStore('timers', () => {
       spentMinutes: 0,
       isRunning: false,
       startedAt: null,
-      sessions: []
+      sessions: [],
+      overtimeNotified: false
     }
     timers.value.set(taskId, timer)
     saveToStorage()
@@ -69,8 +70,57 @@ export const useTimersStore = defineStore('timers', () => {
     
     // Ограничиваем максимум 8 часов (480 минут)
     timer.plannedMinutes = Math.min(Math.max(minutes, 0), 480)
+    // Reset notification flag when planned time changes
+    if (timer.spentMinutes <= timer.plannedMinutes) {
+      timer.overtimeNotified = false
+    }
     timers.value.set(taskId, timer)
     saveToStorage()
+  }
+
+  const checkForOvertime = (taskId: string) => {
+    const timer = getTimerByTaskId(taskId)
+    
+    if (!timer || !timer.isRunning) return
+    
+    // Вычисляем общее потраченное время (включая активную сессию)
+    let totalSpentMinutes = timer.spentMinutes
+    if (timer.startedAt) {
+      const currentSessionTime = (currentTime.value - timer.startedAt) / (1000 * 60)
+      totalSpentMinutes += currentSessionTime
+    }
+    
+    const plannedMinutes = timer.plannedMinutes
+    const isInOvertime = totalSpentMinutes > plannedMinutes && plannedMinutes > 0
+    
+    console.log(`🔔 Checking overtime for task ${taskId}:`, {
+      spentMinutes: totalSpentMinutes,
+      plannedMinutes,
+      isInOvertime,
+      wasNotified: timer.overtimeNotified || false,
+      currentSession: timer.startedAt ? (currentTime.value - timer.startedAt) / (1000 * 60) : 0
+    })
+    
+    // If we're in overtime and haven't notified yet
+    if (isInOvertime && !timer.overtimeNotified) {
+      console.log('🚨 Triggering overtime notification!')
+      timer.overtimeNotified = true // Mark as notified
+      
+      setTimeout(async () => {
+        try {
+          const { useNotificationsStore } = await import('@/stores/notifications')
+          const notificationsStore = useNotificationsStore()
+          
+          console.log('📢 Notifications settings:', notificationsStore.settings.enableOvertimeNotifications)
+          
+          if (notificationsStore.settings.enableOvertimeNotifications) {
+            notificationsStore.showOvertimeNotification(taskId)
+          }
+        } catch (error) {
+          console.error('Failed to show overtime notification:', error)
+        }
+      }, 0)
+    }
   }
 
   const startTimer = (taskId: string) => {
@@ -139,6 +189,7 @@ export const useTimersStore = defineStore('timers', () => {
 
     timer.spentMinutes = 0
     timer.sessions = []
+    timer.overtimeNotified = false // Reset notification flag
     timers.value.set(taskId, timer)
     saveToStorage()
   }
@@ -157,6 +208,11 @@ export const useTimersStore = defineStore('timers', () => {
 
     timeUpdateInterval = setInterval(() => {
       currentTime.value = Date.now()
+      
+      // Check for overtime when time updates
+      if (activeTimerId.value) {
+        checkForOvertime(activeTimerId.value)
+      }
     }, 1000) // Обновляем каждую секунду
   }
 
@@ -197,6 +253,8 @@ export const useTimersStore = defineStore('timers', () => {
       // Восстанавливаем Map из Object
       const timersMap = new Map<string, TaskTimer>()
       for (const [taskId, timer] of Object.entries(parsed.timers as Record<string, TaskTimer>)) {
+        // Ensure overtimeNotified is initialized
+        timer.overtimeNotified = timer.overtimeNotified || false
         timersMap.set(taskId, timer)
       }
       timers.value = timersMap

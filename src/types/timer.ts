@@ -5,6 +5,7 @@ export interface TaskTimer {
   isRunning: boolean
   startedAt: number | null // timestamp начала текущей сессии
   sessions: TimerSession[] // История сессий работы
+  overtimeNotified?: boolean // flag to track if overtime notification was shown
 }
 
 export interface TimerSession {

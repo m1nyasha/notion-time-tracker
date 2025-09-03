@@ -121,6 +121,11 @@
       <PropertyDisplaySettings />
     </div>
 
+    <!-- Notification Settings -->
+    <div class="mt-8">
+      <NotificationSettings />
+    </div>
+
     <!-- Documentation Section -->
     <div class="mt-8 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
       <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-200 mb-3">
@@ -166,6 +171,7 @@ import { useNotionStore } from '@/stores/notion'
 import { useNotionApi } from '@/renderer/composables/useNotionApi'
 import ErrorMessage from '@/renderer/components/ErrorMessage.vue'
 import PropertyDisplaySettings from '@/renderer/components/PropertyDisplaySettings.vue'
+import NotificationSettings from '@/renderer/components/NotificationSettings.vue'
 import { CheckCircleIcon } from '@heroicons/vue/24/solid'
 
 const notionStore = useNotionStore()

@@ -8,6 +8,8 @@ declare global {
         testConnection: (apiKey: string, databaseId: string) => Promise<boolean>
         fetchTasks: (apiKey: string, databaseId: string) => Promise<any[]>
       }
+      openExternal: (url: string) => Promise<void>
+      showNotification?: (options: { title: string; body: string; silent?: boolean }) => Promise<void>
     }
   }
 }
