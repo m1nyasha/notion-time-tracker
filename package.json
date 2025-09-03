@@ -63,24 +63,34 @@
     "wait-on": "^7.2.0"
   },
   "build": {
-    "appId": "com.protasevich.planme",
-    "productName": "Planme",
+    "appId": "com.smartcat.notion-tasks-timer",
+    "productName": "Notion Tasks Timer",
     "directories": {
-      "output": "release"
+      "output": "dist"
     },
     "files": [
       "dist/**/*",
+      "src/renderer/assets/icon/*",
       "node_modules/**/*"
     ],
     "mac": {
       "category": "public.app-category.productivity",
-      "target": "dmg"
+      "target": "dmg",
+      "icon": "src/renderer/assets/icon/256x256.ico"
     },
     "win": {
-      "target": "nsis"
+      "target": "nsis",
+      "icon": "src/renderer/assets/icon/256x256.ico"
     },
     "linux": {
-      "target": "AppImage"
+      "target": "AppImage",
+      "icon": "src/renderer/assets/icon/256x256.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
     }
   }
 }

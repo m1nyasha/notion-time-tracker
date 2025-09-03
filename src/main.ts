@@ -50,6 +50,9 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
+    icon: isDev 
+      ? join(__dirname, '../src/renderer/assets/icon/256x256.ico')
+      : join(__dirname, '../assets/icon/256x256.ico'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
