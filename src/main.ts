@@ -131,21 +131,122 @@ ipcMain.handle('notion-fetch-tasks', async (event, apiKey: string, databaseId: s
     return response.results.map((page: any) => {
       // Extract title from properties
       let title = 'Untitled Task'
+      const properties: Record<string, any> = {}
       
-      // Look for common title property names
-      const titleProperty = Object.values(page.properties).find(
-        (prop: any) => prop.type === 'title' && prop.title?.length > 0
-      ) as any
-
-      if (titleProperty && titleProperty.title) {
-        title = titleProperty.title
-          .map((text: any) => text.plain_text)
-          .join('')
+      // Process all properties
+      for (const [propertyName, property] of Object.entries(page.properties as any)) {
+        const prop = property as any
+        
+        // Extract title
+        if (prop.type === 'title' && prop.title?.length > 0) {
+          title = prop.title.map((text: any) => text.plain_text).join('')
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'title',
+            value: { type: 'title', title }
+          }
+        }
+        // Extract other property types
+        else if (prop.type === 'rich_text') {
+          const richText = prop.rich_text?.map((text: any) => text.plain_text).join('') || ''
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'rich_text',
+            value: { type: 'rich_text', rich_text: richText }
+          }
+        }
+        else if (prop.type === 'number') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'number',
+            value: { type: 'number', number: prop.number }
+          }
+        }
+        else if (prop.type === 'select') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'select',
+            value: { type: 'select', select: prop.select }
+          }
+        }
+        else if (prop.type === 'status') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'status',
+            value: { type: 'status', status: prop.status }
+          }
+        }
+        else if (prop.type === 'multi_select') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'multi_select',
+            value: { type: 'multi_select', multi_select: prop.multi_select || [] }
+          }
+        }
+        else if (prop.type === 'date') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'date',
+            value: { type: 'date', date: prop.date }
+          }
+        }
+        else if (prop.type === 'people') {
+          const people = prop.people?.map((person: any) => ({
+            name: person.name,
+            avatar_url: person.avatar_url
+          })) || []
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'people',
+            value: { type: 'people', people }
+          }
+        }
+        else if (prop.type === 'checkbox') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'checkbox',
+            value: { type: 'checkbox', checkbox: prop.checkbox }
+          }
+        }
+        else if (prop.type === 'url') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'url',
+            value: { type: 'url', url: prop.url }
+          }
+        }
+        else if (prop.type === 'email') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'email',
+            value: { type: 'email', email: prop.email }
+          }
+        }
+        else if (prop.type === 'phone_number') {
+          properties[propertyName] = {
+            id: prop.id,
+            name: propertyName,
+            type: 'phone_number',
+            value: { type: 'phone_number', phone_number: prop.phone_number }
+          }
+        }
       }
 
       return {
         id: page.id,
         title,
+        properties,
         created_time: page.created_time,
         last_edited_time: page.last_edited_time,
       }

@@ -9,10 +9,8 @@
       <div class="flex items-start space-x-3">
         <!-- Drag Handle -->
         <div 
-          class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 
-                 cursor-move mt-1 p-1 -m-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 
-                 transition-colors drag-handle"
-          title="Перетащить задачу"
+          :class="dragHandleClasses"
+          :title="dragHandleTitle"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
@@ -29,13 +27,17 @@
               <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 {{ formatDate(task.created_time) }}
               </p>
+              
+              <!-- Task Properties (Status, etc.) -->
+              <TaskProperties :properties="task.properties" />
             </div>
 
-            <!-- Status Indicator -->
+            <!-- Timer Status Indicator -->
             <div class="ml-3 mt-1 flex items-center space-x-2">
               <div 
-                :class="statusIndicatorClass"
+                :class="timerStatusIndicatorClass"
                 class="w-3 h-3 rounded-full"
+                :title="timerStatusTitle"
               ></div>
             </div>
           </div>
@@ -55,21 +57,44 @@ import { computed } from 'vue'
 import type { NotionTask } from '@/types/notion'
 import { useTimer } from '@/renderer/composables/useTimer'
 import TaskTimer from '@/renderer/components/TaskTimer.vue'
+import TaskProperties from '@/renderer/components/TaskProperties.vue'
 
 interface Props {
   task: NotionTask
   isDragging?: boolean
+  dragDisabled?: boolean
+  dragDisabledReason?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isDragging: false
+  isDragging: false,
+  dragDisabled: false,
+  dragDisabledReason: ''
 })
 
 // Timer composable for status indicator
 const { isRunning, timeProgress } = useTimer(props.task.id)
 
 // Computed
-const statusIndicatorClass = computed(() => {
+const dragHandleClasses = computed(() => {
+  const baseClasses = 'mt-1 p-1 -m-1 rounded transition-colors drag-handle'
+  
+  if (props.dragDisabled) {
+    return `${baseClasses} text-gray-300 dark:text-gray-600 cursor-not-allowed`
+  }
+  
+  return `${baseClasses} text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 
+          cursor-move hover:bg-gray-100 dark:hover:bg-gray-700`
+})
+
+const dragHandleTitle = computed(() => {
+  if (props.dragDisabled && props.dragDisabledReason) {
+    return props.dragDisabledReason
+  }
+  return 'Перетащить задачу'
+})
+
+const timerStatusIndicatorClass = computed(() => {
   if (isRunning.value) {
     return 'bg-green-500 animate-pulse' // Running - green pulsing
   }
@@ -83,6 +108,22 @@ const statusIndicatorClass = computed(() => {
   }
   
   return 'bg-gray-400' // Default - gray
+})
+
+const timerStatusTitle = computed(() => {
+  if (isRunning.value) {
+    return 'Таймер запущен'
+  }
+  
+  if (timeProgress.value?.isOvertime) {
+    return 'Превышено запланированное время'
+  }
+  
+  if (timeProgress.value && timeProgress.value.percentage > 0) {
+    return `Выполнено ${Math.round(timeProgress.value.percentage)}%`
+  }
+  
+  return 'Таймер не запущен'
 })
 
 const formatDate = (dateString: string) => {
