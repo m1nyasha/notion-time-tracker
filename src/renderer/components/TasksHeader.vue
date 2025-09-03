@@ -51,8 +51,6 @@ interface Props {
   filteredCount: number
   totalCount: number
   isLoading: boolean
-  dragDisabled?: boolean
-  dragDisabledReason?: string
 }
 
 interface Emits {
@@ -60,17 +58,11 @@ interface Emits {
   (e: 'reset-order'): void
 }
 
-const props = withDefaults(defineProps<Props>(), {
-  dragDisabled: false,
-  dragDisabledReason: ''
-})
+defineProps<Props>()
 defineEmits<Emits>()
 
 // Computed
 const dragMessage = computed(() => {
-  if (props.dragDisabled && props.dragDisabledReason) {
-    return props.dragDisabledReason
-  }
   return 'Перетащите за иконку для изменения порядка'
 })
 

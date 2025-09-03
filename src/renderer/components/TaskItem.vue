@@ -9,8 +9,10 @@
       <div class="flex items-start space-x-3">
         <!-- Drag Handle -->
         <div 
-          :class="dragHandleClasses"
-          :title="dragHandleTitle"
+          class="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 
+                 cursor-move mt-1 p-1 -m-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 
+                 transition-colors drag-handle"
+          title="Перетащить задачу"
         >
           <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
             <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"/>
@@ -62,38 +64,16 @@ import TaskProperties from '@/renderer/components/TaskProperties.vue'
 interface Props {
   task: NotionTask
   isDragging?: boolean
-  dragDisabled?: boolean
-  dragDisabledReason?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  isDragging: false,
-  dragDisabled: false,
-  dragDisabledReason: ''
+  isDragging: false
 })
 
 // Timer composable for status indicator
 const { isRunning, timeProgress } = useTimer(props.task.id)
 
 // Computed
-const dragHandleClasses = computed(() => {
-  const baseClasses = 'mt-1 p-1 -m-1 rounded transition-colors drag-handle'
-  
-  if (props.dragDisabled) {
-    return `${baseClasses} text-gray-300 dark:text-gray-600 cursor-not-allowed`
-  }
-  
-  return `${baseClasses} text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-400 
-          cursor-move hover:bg-gray-100 dark:hover:bg-gray-700`
-})
-
-const dragHandleTitle = computed(() => {
-  if (props.dragDisabled && props.dragDisabledReason) {
-    return props.dragDisabledReason
-  }
-  return 'Перетащить задачу'
-})
-
 const timerStatusIndicatorClass = computed(() => {
   if (isRunning.value) {
     return 'bg-green-500 animate-pulse' // Running - green pulsing

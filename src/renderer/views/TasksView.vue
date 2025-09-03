@@ -41,8 +41,6 @@
           :filtered-count="filteredTasks.length"
           :total-count="allTasks.length"
           :is-loading="isLoading"
-          :drag-disabled="isDragDisabled"
-          :drag-disabled-reason="getDragDisabledReason()"
           @refresh="handleRefresh"
           @reset-order="handleResetOrder"
         />
@@ -61,8 +59,7 @@
           :is-loading="isLoading"
           :has-error="hasError"
           :has-filters="hasActiveFilters"
-          :drag-disabled="isDragDisabled"
-          :drag-disabled-reason="getDragDisabledReason()"
+          :has-sorting="hasActiveSorting"
           @drag-end="handleDragEnd"
           @refresh="handleRefresh"
           @clear-filters="handleClearFilters"
@@ -101,7 +98,7 @@ const errorMessage = computed(() => tasksStore.errorMessage)
 const allTasks = computed(() => tasksStore.tasks)
 const hasActiveFilters = computed(() => filtersStore.hasActiveFilters)
 const hasActiveSorting = computed(() => filtersStore.sortBy !== null)
-const isDragDisabled = computed(() => hasActiveFilters.value) // Только фильтры блокируют drag & drop
+const isDragDisabled = computed(() => false) // Drag & drop всегда доступен
 
 // Apply filters and sorting to tasks
 const filteredTasks = computed(() => {
@@ -145,23 +142,17 @@ const handleRefresh = async () => {
 }
 
 const handleDragEnd = (newOrder: NotionTask[]) => {
-  // Drag & drop only works when there are no filters
-  if (!isDragDisabled.value) {
-    // If sorting was active, disable it after drag & drop
-    if (hasActiveSorting.value) {
-      filtersStore.setSorting(null)
-    }
-    
-    // Update the original tasks order in the store with the new order
-    tasksStore.reorderTasks(newOrder)
+  // Clear only sorting after drag & drop - keep filters active
+  if (hasActiveSorting.value) {
+    filtersStore.setSorting(null)
   }
+  
+  // Update the original tasks order in the store with the new order
+  tasksStore.reorderTasks(newOrder)
 }
 
 const getDragDisabledReason = (): string => {
-  if (hasActiveFilters.value) {
-    return 'Перетаскивание недоступно при активных фильтрах'
-  }
-  return ''
+  return '' // Drag & drop всегда доступен
 }
 
 const handleResetOrder = async () => {
